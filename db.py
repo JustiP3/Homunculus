@@ -206,7 +206,6 @@ def delete_signal(signal_id):
 
 #Positions
 def create_position(
-    signal_id,
     symbol,
     option_type,
     entry_price,
@@ -224,12 +223,11 @@ def create_position(
 
     cursor.execute("""
         INSERT INTO positions (
-            signal_id, symbol, option_type, entry_price, strike, expiration,
+            symbol, option_type, entry_price, strike, expiration,
             quantity, current_price, stop_loss, take_profit, status
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        signal_id,
         symbol,
         option_type,
         entry_price,
