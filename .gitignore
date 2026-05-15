@@ -6,3 +6,4 @@ homunculus.db
 scan_log.txt
 test.py
 watchlist.py
+db_test.py

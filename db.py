@@ -280,6 +280,24 @@ def get_all_positions():
 
     return [dict(row) for row in rows]
 
+def get_open_positions():
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM positions
+        WHERE status = 'OPEN' OR status = 'PARTIAL'
+        ORDER BY opened_at DESC
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return [dict(row) for row in rows]
+
 def update_position_price(
     position_id,
     current_price
@@ -300,6 +318,27 @@ def update_position_price(
     conn.commit()
     conn.close()
 
+def update_position_quantity(
+    position_id,
+    quantity,
+    status
+):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE positions
+        SET quantity = ?, status = ?
+        WHERE id = ?
+    """, (
+        quantity,
+        status,
+        position_id
+    ))
+
+    conn.commit()
+    conn.close()
 
 def update_position_status(
     position_id,
