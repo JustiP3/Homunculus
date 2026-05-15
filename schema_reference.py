@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS signals (
 
     underlying_price REAL,
     rsi REAL,
-    volume INTEGER,
+    volume INTEGER,               
 
     ema_9 REAL,
     ema_20 REAL,
