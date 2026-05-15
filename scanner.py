@@ -219,11 +219,8 @@ def scan():
 
     return sorted(results, key=lambda x: x["score"], reverse=True)
 
-# ----------------------------
-# RUN
-# ----------------------------
 
-if __name__ == "__main__":
+def run_scanner():
     candidates = scan()
     log_results(candidates)
 
@@ -239,3 +236,12 @@ if __name__ == "__main__":
                 message += line + "\n"                 
 
         send_alert(message)
+    return "Scan complete."
+
+# ----------------------------
+# RUN
+# ----------------------------
+
+if __name__ == "__main__":
+    run_scanner()
+    
