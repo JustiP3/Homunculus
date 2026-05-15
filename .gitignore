@@ -4,3 +4,5 @@ __pycache__/
 .env
 homunculus.db
 scan_log.txt
+test.py
+watchlist.py

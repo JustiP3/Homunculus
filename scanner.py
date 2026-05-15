@@ -9,6 +9,7 @@ from alpaca.data.timeframe import TimeFrame
 from datetime import datetime, timedelta
 
 from alerts import send_alert
+from watchlist import get_tickers
 from dotenv import load_dotenv
 
 
@@ -24,93 +25,11 @@ API_KEY = os.getenv("API_KEY")
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 
-#TICKERS 
-    # Energy
-    #"XOM", "CVX", "COP", "EOG", "SLB", "MPC", "VLO", "BKR", "NNE",
-
-    # Semiconductors / AI
-    #"NVDA", "AMD", "MU", "AVGO", "TSM", "INTC", "AMAT", "LRCX", "KLAC", "ASML",
-
-    # Industrials
-    #"CAT", "DE", "URI", "ROK", "HON", "ETN",
-
-    # Materials
-    #"FCX", "NEM", "LIN", "APD", "MP",
-
-    # Large Cap Liquid Names
-    #"AAPL", "MSFT", "META", "AMZN",
-
-    # Misc
-    #"ALMS", "ACMR", "NXT", "AA", "FCX", "AMPY"
-
-TICKERS = [
-
-    # -------------------------
-    # SEMICONDUCTORS / AI
-    # -------------------------
-
-    "AMD",   # Advanced Micro Devices
-    "MU",    # Micron
-    "ON",    # ON Semiconductor
-    "QCOM",  # Qualcomm
-    "MRVL",  # Marvell
-    "ARM",   # Arm Holdings
-    "AMKR",  # Amkor
-    "ACMR",  # ACM Research
-
-    # -------------------------
-    # ENERGY
-    # -------------------------
-
-    "SLB",   # Schlumberger
-    "BKR",   # Baker Hughes
-    "HAL",   # Halliburton
-    "OXY",   # Occidental
-    "DVN",   # Devon Energy
-    "FANG",  # Diamondback
-    "APA",   # APA Corp
-
-    # -------------------------
-    # INDUSTRIALS / INFRA
-    # -------------------------
-
-    "ETN",   # Eaton
-    "PH",    # Parker Hannifin
-    "EMR",   # Emerson
-    "JCI",   # Johnson Controls
-    "TT",    # Trane
-    "PWR",   # Quanta Services
-
-    # -------------------------
-    # MATERIALS / METALS
-    # -------------------------
-
-    "FCX",   # Freeport-McMoRan
-    "AA",    # Alcoa
-    "CLF",   # Cleveland-Cliffs
-    "MP",    # MP Materials
-
-    # -------------------------
-    # SOLAR / POWER / GRID
-    # -------------------------
-
-    "NXT",   # Nextracker
-    "ARRY",  # Array Technologies
-    "FLNC",  # Fluence Energy
-
-    # -------------------------
-    # SOFTWARE / MOMENTUM
-    # -------------------------
-
-    "PLTR"   # Palantir
-]
+TICKERS = get_tickers()
 
 RSI_MIN = 55
 RSI_MAX = 70
 MIN_VOLUME = 1_000_000
-
-
-
 
 
 client = StockHistoricalDataClient(API_KEY, SECRET_KEY)
@@ -314,8 +233,9 @@ if __name__ == "__main__":
         message = "Top Trade Candidates:\n\n"
 
         for c in candidates:
-            line = f"{c['ticker']} | Score: {c['score']} | Price: {c['price']} | RSI: {c['rsi']}"
-            print(line)
-            message += line + "\n"     
+            if (c['score'] > 12):
+                line = f"{c['ticker']} | Score: {c['score']} | Price: {c['price']} | RSI: {c['rsi']}"
+                print(line)
+                message += line + "\n"                 
 
         send_alert(message)

@@ -381,6 +381,23 @@ def get_position_events(position_id):
 
     return [dict(row) for row in rows]
 
+def get_all_position_events():
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM position_events
+        ORDER BY created_at DESC
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return [dict(row) for row in rows]
+
 
 def delete_position_event(event_id):
 
@@ -449,6 +466,22 @@ def get_market_snapshots(
 
     return [dict(row) for row in rows]
 
+def get_all_market_snapshots():
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM market_snapshots
+        ORDER BY snapshot_time DESC
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return [dict(row) for row in rows]
 
 def delete_market_snapshot(snapshot_id):
 
