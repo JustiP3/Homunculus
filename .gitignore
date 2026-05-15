@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 .env
 homunculus.db
+scan_log.txt

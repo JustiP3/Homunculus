@@ -51,7 +51,6 @@ db.create_signal(
     symbol="AAPL",
     signal_type="BUY",
     rsi=28.5,
-    notes="Oversold bounce setup"
 )
 
 signals = db.get_all_signals()
@@ -135,6 +134,7 @@ print_section("TESTING POSITION EVENTS")
 db.create_position_event(
     position_id=1,
     event_type="EXIT_ALERT",
+    event_value=70,
     message="RSI crossed above 70"
 )
 
