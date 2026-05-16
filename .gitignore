@@ -7,3 +7,4 @@ scan_log.txt
 test.py
 watchlist.py
 db_test.py
+data_snapshot.txt

@@ -12,6 +12,8 @@ from alerts import send_alert
 from watchlist import get_tickers
 from dotenv import load_dotenv
 
+import db
+
 
 
 
@@ -82,6 +84,12 @@ def compute_indicators(df):
     df["EMA50"] = ta.trend.ema_indicator(df["Close"], window=50)
     df["EMA200"] = ta.trend.ema_indicator(df["Close"], window=200)
     df["RSI"] = ta.momentum.rsi(df["Close"], window=14)
+    df["ATR"] = ta.volatility.average_true_range(
+        high=df["High"],
+        low=df["Low"],
+        close=df["Close"],
+        window=14
+    )
     return df
 
 def score_stock(df):
@@ -191,6 +199,7 @@ def scan():
     results = []
     data = get_data_batch(TICKERS)
 
+
     for ticker in TICKERS:
         try:
             df = data.get(ticker)
@@ -211,7 +220,9 @@ def scan():
                     "ticker": ticker,
                     "score": score,
                     "price": round(latest["Close"], 2),
-                    "rsi": round(latest["RSI"], 2)
+                    "rsi": round(latest["RSI"], 2),
+                    "volume": latest["Volume"],
+                    "atr": round(latest["ATR"], 2)
                 })
 
         except Exception as e:
@@ -231,9 +242,17 @@ def run_scanner():
 
         for c in candidates:
             if (c['score'] > 12):
-                line = f"{c['ticker']} | Score: {c['score']} | Price: {c['price']} | RSI: {c['rsi']}"
+                ticker = c['ticker']
+                score = c['score']
+                price = c['price']
+                rsi = c['rsi']
+                atr = c['atr']
+                volume = c['volume']
+
+                line = f"{ticker} | Score: {score} | Price: {price} | RSI: {rsi} | ATR: {atr} | Volume: {volume}"
                 print(line)
-                message += line + "\n"                 
+                db.create_market_snapshot(symbol=ticker, price=price, rsi=rsi, atr=atr, volume=volume)
+                message += line + "\n"
 
         send_alert(message)
     return "Scan complete."
