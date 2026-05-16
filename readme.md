@@ -2,7 +2,6 @@
 
 Homunculus is a lightweight Python-based trading assistant designed for automated stock and options scanning, Discord-based trade management, and strategy experimentation.
 
-The project runs on a Linux server and uses a Discord bot as the primary command and alert interface.
 
 ---
 

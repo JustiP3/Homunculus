@@ -2,6 +2,9 @@ import os
 
 import discord
 from discord.ext import commands
+from discord.ext import tasks
+from datetime import time
+import zoneinfo
 from dotenv import load_dotenv
 
 import scanner
@@ -12,6 +15,8 @@ import trade_manager
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+DISCORD_CHANNEL_ID = int(os.getenv("DISCORD_CHANNEL_ID"))
+PACIFIC = zoneinfo.ZoneInfo("America/Los_Angeles")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -21,11 +26,39 @@ bot = commands.Bot(
     intents=intents
 )
 
+
+### SCHEDULED TASKS ###
+
+@tasks.loop(time=time(hour=7, minute=00, tzinfo=PACIFIC))
+async def scheduled_scan():
+
+    channel = bot.get_channel(DISCORD_CHANNEL_ID)
+    print(channel)
+    print("running scheduled scan...")
+    try:
+
+        result = scanner.run_scanner()
+        await channel.send(
+            f"Scheduled scan:\n{result}"
+        )
+
+    except Exception as e:
+
+        await channel.send(
+            f"Scheduled scan error:\n{e}"
+        )
+
 ### BOT Startup Event ###
 
 @bot.event
 async def on_ready():
+
     print(f"Logged in as {bot.user}")
+
+    if not scheduled_scan.is_running():
+        scheduled_scan.start()
+
+
 
 ### BOT Commands ###
 
