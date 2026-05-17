@@ -1,0 +1,23 @@
+<h1>Open Positions</h1>
+
+<table border="1">
+
+<tr>
+    <th>Symbol</th>
+    <th>Strike</th>
+    <th>Expiration</th>
+    <th>Quantity</th>
+</tr>
+
+{% for p in positions %}
+
+<tr>
+    <td>{{ p.symbol }}</td>
+    <td>{{ p.strike_price }}</td>
+    <td>{{ p.expiration_date }}</td>
+    <td>{{ p.quantity }}</td>
+</tr>
+
+{% endfor %}
+
+</table>

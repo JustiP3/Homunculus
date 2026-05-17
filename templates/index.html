@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+    
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+	<title>Homunculus Dashboard</title>
+	
+</head>
+<body>
+	<div class="page">
+		<header clss="header">
+            <div class="header-left"></div>
+			<h1>Homunculus Dashboard</h1>
+            <div class="subtitle">
+                    Arcane Data Interface
+            </div>
+            </div>
+            <button class="btn">
+                Refresh
+            </button>
+		</header>
+        
+         <section class="panel panel-glow">
+            <h2>System Status</h2>
+            	<nav>
+			<a href="positions.html">Positions</a>
+			<a href="signals.html">Signals</a>
+			<a href="market_snapshots.html" class="secondary">Market Snapshots</a>
+		</nav>
+         </section>
+	
+
+		<p class="note">Quick links to other pages in the same root folder.</p>
+	</div>
+</body>
+</html>

@@ -1,0 +1,421 @@
+/* =========================
+   HOMUNCULUS - Dark Console UI
+   ========================= */
+
+:root {
+    --bg: #0a0c10;
+    --bg-elevated: #12161d;
+    --panel: #151a22;
+    --panel-2: #1b212b;
+
+    --border: #2b3442;
+    --border-soft: #202733;
+
+    --text: #e6edf3;
+    --text-dim: #94a3b8;
+    --text-faint: #64748b;
+
+    --accent: #00ffae;
+    --accent-soft: rgba(0, 255, 174, 0.12);
+
+    --danger: #ff5f7a;
+    --warning: #ffb454;
+
+    --shadow:
+        0 10px 30px rgba(0, 0, 0, 0.45),
+        0 0 1px rgba(255,255,255,0.03);
+
+    --glow:
+        0 0 12px rgba(0, 255, 174, 0.25),
+        0 0 32px rgba(0, 255, 174, 0.08);
+
+    --radius: 14px;
+    --radius-sm: 8px;
+
+    --transition: 0.18s ease;
+}
+
+/* =========================
+   Base Layout
+   ========================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 32px;
+
+    background:
+        radial-gradient(circle at top left, rgba(0,255,174,0.05), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(0,140,255,0.04), transparent 35%),
+        var(--bg);
+
+    color: var(--text);
+
+    font-family:
+        Inter,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+
+    line-height: 1.5;
+}
+
+/* =========================
+   Typography
+   ========================= */
+
+h1, h2, h3, h4 {
+    margin-top: 0;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+h1 {
+    font-size: 2.4rem;
+    color: var(--accent);
+    text-shadow: 0 0 18px rgba(0,255,174,0.18);
+}
+
+h2 {
+    font-size: 1.4rem;
+    color: var(--text);
+    margin-bottom: 18px;
+}
+
+p {
+    color: var(--text-dim);
+}
+
+small,
+.text-muted {
+    color: var(--text-faint);
+}
+
+/* =========================
+   Main Containers
+   ========================= */
+
+.page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.panel {
+    background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.02),
+        rgba(255,255,255,0.01)
+    );
+
+    background-color: var(--panel);
+
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+
+    padding: 24px;
+    margin-bottom: 24px;
+
+    box-shadow: var(--shadow);
+
+    backdrop-filter: blur(8px);
+}
+
+.panel-glow {
+    border-color: rgba(0,255,174,0.2);
+    box-shadow: var(--shadow), var(--glow);
+}
+
+/* =========================
+   Header / Title Bar
+   ========================= */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 28px;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.subtitle {
+    color: var(--text-faint);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+}
+
+/* =========================
+   Buttons
+   ========================= */
+
+button,
+.btn {
+    appearance: none;
+    border: 1px solid rgba(0,255,174,0.22);
+
+    background: linear-gradient(
+        to bottom,
+        rgba(0,255,174,0.14),
+        rgba(0,255,174,0.08)
+    );
+
+    color: var(--accent);
+
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+    font-weight: 600;
+
+    transition:
+        transform var(--transition),
+        background var(--transition),
+        border var(--transition),
+        box-shadow var(--transition);
+}
+
+button:hover,
+.btn:hover {
+    transform: translateY(-1px);
+
+    border-color: rgba(0,255,174,0.45);
+
+    box-shadow:
+        0 0 16px rgba(0,255,174,0.15),
+        0 6px 18px rgba(0,0,0,0.35);
+}
+
+button:active,
+.btn:active {
+    transform: translateY(1px);
+}
+
+/* =========================
+   Forms
+   ========================= */
+
+input,
+select,
+textarea {
+    width: 100%;
+
+    background-color: var(--bg-elevated);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+
+    color: var(--text);
+
+    padding: 12px 14px;
+    margin-top: 6px;
+
+    transition:
+        border var(--transition),
+        box-shadow var(--transition);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+
+    border-color: rgba(0,255,174,0.5);
+
+    box-shadow:
+        0 0 0 4px rgba(0,255,174,0.08);
+}
+
+label {
+    display: block;
+    margin-bottom: 16px;
+
+    font-size: 0.92rem;
+    font-weight: 600;
+
+    color: var(--text-dim);
+}
+
+/* =========================
+   Tables
+   ========================= */
+
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+
+    background-color: var(--panel);
+
+    overflow: hidden;
+
+    border-radius: var(--radius);
+}
+
+thead {
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0,255,174,0.12),
+            rgba(0,255,174,0.04)
+        );
+
+    border-bottom: 1px solid rgba(0,255,174,0.18);
+}
+
+th {
+    color: var(--accent);
+
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+
+    font-weight: 700;
+
+    padding: 16px;
+    text-align: left;
+}
+
+td {
+    padding: 14px 16px;
+
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+
+    color: var(--text-dim);
+}
+
+tbody tr {
+    transition:
+        background var(--transition),
+        transform var(--transition);
+}
+
+tbody tr:nth-child(even) {
+    background-color: rgba(255,255,255,0.015);
+}
+
+tbody tr:hover {
+    background-color: rgba(0,255,174,0.06);
+}
+
+/* =========================
+   Status Badges
+   ========================= */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 4px 10px;
+
+    border-radius: 999px;
+
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.badge-online {
+    background-color: rgba(0,255,174,0.12);
+    color: var(--accent);
+}
+
+.badge-warning {
+    background-color: rgba(255,180,84,0.12);
+    color: var(--warning);
+}
+
+.badge-danger {
+    background-color: rgba(255,95,122,0.12);
+    color: var(--danger);
+}
+
+/* =========================
+   Cards / Grid Layout
+   ========================= */
+
+.grid {
+    display: grid;
+    gap: 24px;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.card {
+    background-color: var(--panel);
+    border: 1px solid var(--border-soft);
+
+    border-radius: var(--radius);
+
+    padding: 20px;
+
+    box-shadow: var(--shadow);
+}
+
+.card-title {
+    margin-bottom: 12px;
+    color: var(--accent);
+}
+
+/* =========================
+   Scrollbars
+   ========================= */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #283140;
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #344154;
+}
+
+/* =========================
+   Responsive
+   ========================= */
+
+@media (max-width: 768px) {
+    body {
+        padding: 18px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .panel {
+        padding: 18px;
+    }
+
+    th,
+    td {
+        padding: 12px;
+    }
+}
