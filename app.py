@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect
 import db
 
 app = Flask(__name__)
@@ -21,16 +21,32 @@ def positions():
     )
 
 
-@app.route("/watchlist")
-def watchlist():
+@app.route("/signals")
+def signals():
 
-    symbols = db.get_watchlist()
+    signals = db.get_all_signals()
 
     return render_template(
-        "watchlist.html",
-        symbols=symbols
+        "signals.html",
+        signals=signals
     )
 
+@app.route("/signals/create", methods=["POST"])
+def create_signal():
+
+    strategy_id = request.form["strategy_id"]
+    symbol = request.form["symbol"]
+    signal_type = request.form["signal_type"]
+    rsi = request.form["rsi"]
+
+    db.create_signal(
+        strategy_id,
+        symbol,
+        signal_type,
+        rsi
+    )
+
+    return redirect("/signals")
 
 if __name__ == "__main__":
 

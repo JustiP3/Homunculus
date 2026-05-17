@@ -1,0 +1,228 @@
+<!-- templates/signals.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homunculus | Signals</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+<!-- =========================
+ NAVIGATION
+========================== -->
+
+<nav class="navbar">
+
+    <div class="nav-brand">
+        HOMUNCULUS
+    </div>
+
+    <div class="nav-links">
+
+        <a href="/" class="nav-link">
+            Dashboard
+        </a>
+
+        <a href="/positions" class="nav-link">
+            Positions
+        </a>
+
+        <a href="/signals" class="nav-link">
+            Signals
+        </a>
+
+        <a href="/position-events" class="nav-link">
+            Position Events
+        </a>
+
+        <a href="/market-snapshots" class="nav-link">
+            Market Snapshots
+        </a>
+
+    </div>
+
+</nav>
+
+<div class="page">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <div class="header">
+        <div class="header-left">
+            <h1>Signals</h1>
+            <div class="subtitle">
+                Strategy signal generation and execution tracking
+            </div>
+        </div>
+
+        <div>
+            <span class="badge badge-online">
+                HOMUNCULUS ACTIVE
+            </span>
+        </div>
+    </div>
+
+
+    <!-- =========================
+         MAIN LAYOUT
+    ========================== -->
+
+    <div class="signals-layout">
+
+        <!-- =========================
+             LEFT PANEL - FORM
+        ========================== -->
+
+        <div class="panel panel-glow">
+
+            <h2>Create Signal</h2>
+
+            <form action="/signals/create" method="POST">
+
+                <label>
+                    Strategy ID
+                    <input
+                        type="number"
+                        name="strategy_id"
+                        placeholder="1"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Symbol
+                    <input
+                        type="text"
+                        name="symbol"
+                        placeholder="SPY"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Signal Type
+                    <select name="signal_type" required>
+                        <option value="">Select Signal</option>
+                        <option value="CALL_BUY">CALL_BUY</option>
+                        <option value="PUT_BUY">PUT_BUY</option>
+                        <option value="EXIT">EXIT</option>
+                        <option value="HEDGE">HEDGE</option>
+                    </select>
+                </label>
+
+                <label>
+                    RSI
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="rsi"
+                        placeholder="42.15"
+                        required
+                    >
+                </label>
+
+                <button type="submit">
+                    Create Signal
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- =========================
+             RIGHT PANEL - TABLE
+        ========================== -->
+
+        <div class="panel">
+
+            <div class="table-header">
+                <h2>Signal Database</h2>
+
+                <div class="text-muted">
+                    {{ signals|length }} records
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Strategy</th>
+                            <th>Symbol</th>
+                            <th>Type</th>
+                            <th>RSI</th>
+                            <th>Status</th>
+                            <th>Signal Time</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% for signal in signals %}
+
+                        <tr>
+
+                            <td>{{ signal.id }}</td>
+
+                            <td>{{ signal.strategy_id }}</td>
+
+                            <td>{{ signal.symbol }}</td>
+
+                            <td>
+
+                                {% if signal.signal_type == "CALL_BUY" %}
+                                    <span class="badge badge-online">
+                                        {{ signal.signal_type }}
+                                    </span>
+
+                                {% elif signal.signal_type == "PUT_BUY" %}
+                                    <span class="badge badge-danger">
+                                        {{ signal.signal_type }}
+                                    </span>
+
+                                {% else %}
+                                    <span class="badge badge-warning">
+                                        {{ signal.signal_type }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>{{ signal.rsi }}</td>
+
+                            <td>{{ signal.status }}</td>
+
+                            <td>{{ signal.signal_time }}</td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
