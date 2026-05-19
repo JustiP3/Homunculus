@@ -1,16 +1,29 @@
+<!-- templates/positions.html -->
+
 <!doctype html>
 <html lang="en">
-    
+
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-	<title>Positions</title>
-	
+    <meta charset="utf-8" />
+
+    <meta
+        name="viewport"
+        content="width=device-width,initial-scale=1"
+    />
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    />
+
+    <title>Homunculus | Positions</title>
+
 </head>
+
 <body>
+
 <!-- =========================
- NAVIGATION
+     NAVIGATION
 ========================== -->
 
 <nav class="navbar">
@@ -25,7 +38,7 @@
             Dashboard
         </a>
 
-        <a href="/positions" class="nav-link">
+        <a href="/positions" class="nav-link active">
             Positions
         </a>
 
@@ -44,34 +57,326 @@
     </div>
 
 </nav>
-	<div class="page">
-		<header class="header">
-			<h1>Open Positions</h1>
-		</header>
 
-<table border="1">
 
-<tr>
-    <th>Entry Date</th>
-    <th>Symbol</th>
-    <th>Strike</th>
-    <th>Expiration</th>
-    <th>Quantity</th>
-</tr>
+<div class="page">
 
-{% for p in positions %}
+    <!-- =========================
+         HEADER
+    ========================== -->
 
-<tr>
-    <td>{{ p.opened_at }}</td>
-    <td>{{ p.symbol }}</td>
-    <td>{{ p.strike }}</td>
-    <td>{{ p.expiration }}</td>
-    <td>{{ p.quantity }}</td>
-</tr>
+    <div class="header">
 
-{% endfor %}
+        <div class="header-left">
 
-</table>
+            <h1>Open Positions</h1>
+
+            <div class="subtitle">
+                Active option contracts and risk exposure
+            </div>
+
+        </div>
+
+        <div>
+            <span class="badge badge-online">
+                POSITION ENGINE ACTIVE
+            </span>
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         MAIN LAYOUT
+    ========================== -->
+
+    <div class="signals-layout">
+
+        <!-- =========================
+             LEFT PANEL - FORM
+        ========================== -->
+
+        <div class="panel panel-glow">
+
+            <h2>Create Position</h2>
+
+            <form action="/positions/create" method="POST">
+
+                <label>
+                    Symbol
+                    <input
+                        type="text"
+                        name="symbol"
+                        placeholder="SPY"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Option Type
+                    <select name="option_type" required>
+
+                        <option value="">
+                            Select Type
+                        </option>
+
+                        <option value="CALL">
+                            CALL
+                        </option>
+
+                        <option value="PUT">
+                            PUT
+                        </option>
+
+                    </select>
+                </label>
+
+                <label>
+                    Entry Price
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="entry_price"
+                        placeholder="2.45"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Strike Price
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="strike_price"
+                        placeholder="610"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Expiration Date
+                    <input
+                        type="date"
+                        name="expiration_date"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Quantity
+                    <input
+                        type="number"
+                        name="quantity"
+                        placeholder="1"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Current Price
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="current_price"
+                        placeholder="2.45"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Stop Loss
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="stop_loss"
+                        placeholder="1.80"
+                    >
+                </label>
+
+                <label>
+                    Take Profit
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="take_profit"
+                        placeholder="4.20"
+                    >
+                </label>
+
+                <button type="submit">
+                    Create Position
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- =========================
+             RIGHT PANEL - TABLE
+        ========================== -->
+
+        <div class="panel">
+
+            <div class="table-header">
+
+                <h2>Position Database</h2>
+
+                <div class="text-muted">
+                    {{ positions|length }} records
+                </div>
+
+            </div>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Opened</th>
+                            <th>Symbol</th>
+                            <th>Type</th>
+                            <th>Strike</th>
+                            <th>Expiration</th>
+                            <th>Qty</th>
+                            <th>Entry</th>
+                            <th>Current</th>
+                            <th>PnL</th>
+                            <th>Status</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for p in positions %}
+
+                        <tr>
+
+                            <td>
+                                {{ p.opened_at }}
+                            </td>
+
+                            <td>
+                                {{ p.symbol }}
+                            </td>
+
+                            <td>
+
+                                {% if p.option_type == "CALL" %}
+
+                                    <span class="badge badge-online">
+                                        CALL
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge badge-danger">
+                                        PUT
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ p.strike }}
+                            </td>
+
+                            <td>
+                                {{ p.expiration }}
+                            </td>
+
+                            <td>
+                                {{ p.quantity }}
+                            </td>
+
+                            <td>
+                                ${{ p.entry_price }}
+                            </td>
+
+                            <td>
+                                ${{ p.current_price }}
+                            </td>
+                            <td>
+
+                                {% if p.status == "CLOSED" %}
+
+                                    {% set pnl =
+                                        (p.quantity * p.current_price) -
+                                        (p.quantity * p.entry_price)
+                                    %}
+
+                                    {% if pnl > 0 %}
+
+                                        <span class="badge badge-online">
+                                            +${{ "%.2f"|format(pnl) }}
+                                        </span>
+
+                                    {% elif pnl < 0 %}
+
+                                        <span class="badge badge-danger">
+                                            -${{ "%.2f"|format(pnl|abs) }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge badge-warning">
+                                            $0.00
+                                        </span>
+
+                                    {% endif %}
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+                            <td>
+
+                                {% if p.status == "OPEN" %}
+
+                                    <span class="badge badge-online">
+                                        {{ p.status }}
+                                    </span>
+
+                                {% elif p.status == "CLOSED" %}
+
+                                    <span class="badge badge-danger">
+                                        {{ p.status }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge badge-warning">
+                                        {{ p.status }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
+
 </body>
 </html>

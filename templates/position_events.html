@@ -1,0 +1,271 @@
+<!-- templates/position_events.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homunculus | Position Events</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+<!-- =========================
+     NAVIGATION
+========================== -->
+
+<nav class="navbar">
+
+    <div class="nav-brand">
+        HOMUNCULUS
+    </div>
+
+    <div class="nav-links">
+
+        <a href="/" class="nav-link">
+            Dashboard
+        </a>
+
+        <a href="/positions" class="nav-link">
+            Positions
+        </a>
+
+        <a href="/signals" class="nav-link">
+            Signals
+        </a>
+
+        <a href="/position-events" class="nav-link active">
+            Position Events
+        </a>
+
+        <a href="/market-snapshots" class="nav-link">
+            Market Snapshots
+        </a>
+
+    </div>
+
+</nav>
+
+<div class="page">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <div class="header">
+
+        <div class="header-left">
+
+            <h1>Position Events</h1>
+
+            <div class="subtitle">
+                Trade lifecycle logging and execution tracking
+            </div>
+
+        </div>
+
+        <div>
+            <span class="badge badge-warning">
+                EVENT STREAM ACTIVE
+            </span>
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         MAIN LAYOUT
+    ========================== -->
+
+    <div class="signals-layout">
+
+        <!-- =========================
+             LEFT PANEL - FORM
+        ========================== -->
+
+        <div class="panel panel-glow">
+
+            <h2>Create Event</h2>
+
+            <form action="/position-events/create" method="POST">
+
+                <label>
+                    Position ID
+                    <input
+                        type="number"
+                        name="position_id"
+                        placeholder="1"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Event Type
+                    <select name="event_type" required>
+
+                        <option value="">
+                            Select Event
+                        </option>
+
+                        <option value="ENTRY">
+                            ENTRY
+                        </option>
+
+                        <option value="SCALE_IN">
+                            SCALE_IN
+                        </option>
+
+                        <option value="SCALE_OUT">
+                            SCALE_OUT
+                        </option>
+
+                        <option value="STOP_LOSS">
+                            STOP_LOSS
+                        </option>
+
+                        <option value="TAKE_PROFIT">
+                            TAKE_PROFIT
+                        </option>
+
+                        <option value="CLOSE">
+                            CLOSE
+                        </option>
+
+                        <option value="UPDATE">
+                            UPDATE
+                        </option>
+
+                    </select>
+                </label>
+
+                <label>
+                    Event Value
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="event_value"
+                        placeholder="2.35"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Notes
+                    <textarea
+                        name="message"
+                        rows="5"
+                        placeholder="Partial profit taken at resistance..."
+                    ></textarea>
+                </label>
+
+                <button type="submit">
+                    Create Event
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- =========================
+             RIGHT PANEL - TABLE
+        ========================== -->
+
+        <div class="panel">
+
+            <div class="table-header">
+
+                <h2>Position Event Database</h2>
+
+                <div class="text-muted">
+                    {{ events|length }} records
+                </div>
+
+            </div>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Position ID</th>
+                            <th>Event Type</th>
+                            <th>Value</th>
+                            <th>Notes</th>
+                            <th>Created At</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for event in events %}
+
+                        <tr>
+
+                            <td>{{ event.id }}</td>
+
+                            <td>{{ event.position_id }}</td>
+
+                            <td>
+
+                                {% if event.event_type == "ENTRY" %}
+
+                                    <span class="badge badge-online">
+                                        {{ event.event_type }}
+                                    </span>
+
+                                {% elif event.event_type == "STOP_LOSS" %}
+
+                                    <span class="badge badge-danger">
+                                        {{ event.event_type }}
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge badge-warning">
+                                        {{ event.event_type }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ event.event_value }}
+                            </td>
+
+                            <td>
+                                {{ event.notes }}
+                            </td>
+
+                            <td>
+                                {{ event.created_at }}
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
