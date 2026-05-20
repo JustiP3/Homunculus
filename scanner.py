@@ -1,234 +1,227 @@
-import pandas as pd
-import numpy as np
-import ta
-import os
-
-from alpaca.data.historical import StockHistoricalDataClient
-from alpaca.data.requests import StockBarsRequest
-from alpaca.data.timeframe import TimeFrame
-from datetime import datetime, timedelta
+from core.data import get_data_batch
+from core.indicators import compute_indicators
+from core.scoring import score_stock
+from core.logging_util import log_results
 
 from alerts import send_alert
 from watchlist import get_tickers
-from dotenv import load_dotenv
 
 import db
 
-
-
-
-
-# ----------------------------
-# CONFIG
-# ----------------------------
-load_dotenv()
-
-API_KEY = os.getenv("API_KEY")
-SECRET_KEY = os.getenv("SECRET_KEY")
-
+# -------------------------
+# GET TICKERS
+# -------------------------
 
 TICKERS = get_tickers()
 
-RSI_MIN = 55
-RSI_MAX = 70
-MIN_VOLUME = 1_000_000
+def build_symbol_universe():
 
+    tickers = list(TICKERS.keys())
 
-client = StockHistoricalDataClient(API_KEY, SECRET_KEY)
+    sectors = list({
+        meta["sector"]
+        for meta in TICKERS.values()
+    })
 
-# ----------------------------
-# FUNCTIONS
-# ----------------------------
+    extras = [
+        "SPY",
+        "QQQ",
+        "VIXY"
+    ]
 
-def get_data_batch(tickers):
-    end = datetime.now()
-    start = end - timedelta(days=300)
+    return tickers + sectors + extras
 
-    request = StockBarsRequest(
-        symbol_or_symbols=tickers,
-        timeframe=TimeFrame.Day,
-        start=start,
-        end=end
-    )
-
-    bars = client.get_stock_bars(request)
-
-    data = {}
-
-    for ticker in tickers:
-        try:
-            df = bars.df.xs(ticker, level="symbol").copy()
-        except KeyError:
-            continue
-
-        if df.empty:
-            continue
-
-        df = df.reset_index()
-        df.set_index("timestamp", inplace=True)
-
-        df.rename(columns={
-            "open": "Open",
-            "high": "High",
-            "low": "Low",
-            "close": "Close",
-            "volume": "Volume"
-        }, inplace=True)
-
-        data[ticker] = df
-
-    return data
-
-def compute_indicators(df):
-    df["EMA20"] = ta.trend.ema_indicator(df["Close"], window=20)
-    df["EMA50"] = ta.trend.ema_indicator(df["Close"], window=50)
-    df["EMA200"] = ta.trend.ema_indicator(df["Close"], window=200)
-    df["RSI"] = ta.momentum.rsi(df["Close"], window=14)
-    df["ATR"] = ta.volatility.average_true_range(
-        high=df["High"],
-        low=df["Low"],
-        close=df["Close"],
-        window=14
-    )
-    return df
-
-def score_stock(df):
-    latest = df.iloc[-1]
-    if len(df) < 7:
-        return 0, latest
-
-    score = 0
-
-    # -------------------------
-    # PRICE FILTER
-    # -------------------------
-
-    # Ideal stock price range for affordable options
-    if 15 <= latest["Close"] <= 150:
-        score += 2
-
-    # -------------------------
-    # TREND ALIGNMENT
-    # -------------------------
-
-    if latest["Close"] > latest["EMA20"]:
-        score += 1
-
-    if latest["EMA20"] > latest["EMA50"]:
-        score += 1
-
-    if latest["EMA50"] > latest["EMA200"]:
-        score += 1
-
-    # -------------------------
-    # RSI MOMENTUM
-    # -------------------------
-
-    # Sweet spot:
-    # strong momentum but not overextended
-    if 55 <= latest["RSI"] <= 65:
-        score += 3
-
-    # Slightly extended but still acceptable
-    elif 65 < latest["RSI"] <= 70:
-        score += 1
-
-    # -------------------------
-    # VOLUME CONFIRMATION
-    # -------------------------
-
-    if latest["Volume"] > 1_000_000:
-        score += 2
-
-    # -------------------------
-    # DISTANCE FROM EMA20
-    # -------------------------
-
-    # Avoid chasing extended moves
-    distance_from_ema20 = (
-        (latest["Close"] - latest["EMA20"])
-        / latest["EMA20"]
-    )
-
-    # Ideal:
-    # within 8% above EMA20
-    if 0 <= distance_from_ema20 <= 0.08:
-        score += 3
-
-    # Slightly extended
-    elif 0.08 < distance_from_ema20 <= 0.15:
-        score += 1
-
-    # -------------------------
-    # EMA20 SLOPE
-    # -------------------------
-
-    # Confirm EMA20 is actually rising
-    
-    
-    ema20_now = latest["EMA20"]
-    ema20_prev = df.iloc[-5]["EMA20"]
-
-    if ema20_now > ema20_prev:
-        score += 2
-
-    return score, latest
-
-
-def log_results(candidates, filename="scan_log.txt"):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    if not candidates:
-        line = f"{timestamp} | No setups found\n"
-    else:
-        lines = []
-        for c in candidates:
-            lines.append(
-                f"{timestamp} | {c['ticker']} | Score:{c['score']} | Price:{c['price']} | RSI:{c['rsi']}"
-            )
-        line = "\n".join(lines) + "\n"
-
-    with open(filename, "a") as f:  # "a" = append mode
-        f.write(line)
-
-# ----------------------------
-# MAIN SCANNER
-# ----------------------------
+# -------------------------
+# SCAN PLUS POSTSCORE FILTER
+# -------------------------
 
 def scan():
+
     results = []
-    data = get_data_batch(TICKERS)
 
+    # One large batch request
+    data = get_data_batch(build_symbol_universe())
 
-    for ticker in TICKERS:
+    # Market context
+    vix_df = data.get("VIXY")
+    spy_df = data.get("SPY")
+    qqq_df = data.get("QQQ")
+
+    if vix_df is not None and not vix_df.empty:
+        vix_df = compute_indicators(vix_df)
+
+    if spy_df is not None and not spy_df.empty:
+        spy_df = compute_indicators(spy_df)
+
+    if qqq_df is not None and not qqq_df.empty:
+        qqq_df = compute_indicators(qqq_df)
+
+    # ----------------------------
+    # Scan individual tickers
+    # ----------------------------
+
+    for ticker, meta in TICKERS.items():
+
         try:
+
+            sector_symbol = meta["sector"]
+
             df = data.get(ticker)
+            sector_df = data.get(sector_symbol)
+
+            # ----------------------------
+            # Validate stock data
+            # ----------------------------
 
             if df is None or df.empty:
                 continue
 
-            df = df.dropna()
+            
 
             if df.empty:
                 continue
 
+            # ----------------------------
+            # Validate sector ETF data
+            # ----------------------------
+
+            if sector_df is None or sector_df.empty:
+                continue
+
+            
+
+            if sector_df.empty:
+                continue
+
+            # ----------------------------
+            # Compute indicators
+            # ----------------------------
+
             df = compute_indicators(df)
+            sector_df = compute_indicators(sector_df)
+
+            df = df.dropna()
+            sector_df = sector_df.dropna()
+
+            if df.empty or sector_df.empty:
+                continue
+
+            latest = df.iloc[-1]
+            sector_latest = sector_df.iloc[-1]
+
+            # ----------------------------
+            # Base stock score
+            # ----------------------------
+
             score, latest = score_stock(df)
 
+            # ----------------------------
+            # Sector confirmation
+            # ----------------------------
+
+            sector_trending_up = (
+                sector_latest["Close"] >
+                sector_latest["EMA50"]
+            )
+
+            if sector_trending_up:
+                score += 2
+
+            # ----------------------------
+            # Relative strength
+            # ----------------------------
+
+            stock_strength = (
+                latest["Close"] /
+                latest["EMA20"]
+            )
+
+            sector_strength = (
+                sector_latest["Close"] /
+                sector_latest["EMA20"]
+            )
+
+            relative_strength = (
+                stock_strength -
+                sector_strength
+            )
+
+            if relative_strength > 0:
+                score += 2
+
+            # ----------------------------
+            # Volatility filter
+            # ----------------------------
+
+            vix_value = None
+
+            if vix_df is not None and not vix_df.empty:
+
+                vix_latest = vix_df.iloc[-1]
+
+                vix_value = round(
+                    vix_latest["Close"],
+                    2
+                )
+
+                # Penalize extreme volatility
+                if vix_latest["Close"] > 30:
+                    score -= 3
+
+            # ----------------------------
+            # Final candidate filter
+            # ----------------------------
+
             if score >= 5:
+
                 results.append({
+
                     "ticker": ticker,
+
+                    "sector": sector_symbol,
+
+                    "industry": meta["industry"],
+
                     "score": score,
-                    "price": round(latest["Close"], 2),
-                    "rsi": round(latest["RSI"], 2),
-                    "volume": latest["Volume"],
-                    "atr": round(latest["ATR"], 2)
+
+                    "price": round(
+                        latest["Close"],
+                        2
+                    ),
+
+                    "rsi": round(
+                        latest["RSI"],
+                        2
+                    ),
+
+                    "volume": int(
+                        latest["Volume"]
+                    ),
+
+                    "atr": round(
+                        latest["ATR"],
+                        2
+                    ),
+
+                    "relative_strength": round(
+                        relative_strength,
+                        3
+                    ),
+
+                    "sector_trending": sector_trending_up,
+
+                    "vix": vix_value
                 })
 
         except Exception as e:
+
             print(f"Error with {ticker}: {e}")
 
-    return sorted(results, key=lambda x: x["score"], reverse=True)
+    return sorted(
+        results,
+        key=lambda x: x["score"],
+        reverse=True
+    )
 
 
 def run_scanner():
