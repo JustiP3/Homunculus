@@ -78,25 +78,83 @@ async def scan(ctx):
         await ctx.send(f"Scanner error: {e}")
 
 @bot.command()
-async def enter(ctx,symbol, option_type, exp,strike:float,price:float,quantity:int=1):
-    #symbol, option_type, strike_price, expiration_date, quantity, entry_price
+async def enter(
+    ctx,
+    symbol,
+    option_type,
+    exp,
+    strike: float,
+    price: float,
+
+    quantity: int = 1,
+
+    trend_score: float = None,
+    entry_score: float = None,
+
+    entry_rsi: float = None,
+    relative_volume: float = None,
+
+    sector: str = None
+):
 
     try:
-        position_id = trade_manager.enter_trade(symbol, option_type, strike, exp, quantity, price)
+
+        position_id = trade_manager.enter_trade(
+
+            symbol=symbol.upper(),
+
+            option_type=option_type.upper(),
+
+            strike_price=strike,
+            expiration_date=exp,
+
+            quantity=quantity,
+
+            entry_price=price,
+
+            trend_score=trend_score,
+            entry_score=entry_score,
+
+            entry_rsi=entry_rsi,
+
+            relative_volume=relative_volume,
+
+            sector=sector
+        )
 
         response = (
-            f"Entering position:\n"
+            f"📈 Entered Position\n\n"
+
             f"ID: {position_id}\n"
+
             f"{symbol.upper()} "
-            f"{strike} {option_type.upper()} "
-            f"{exp}\n"
+            f"{strike} "
+            f"{option_type.upper()} "
+            f"{exp}\n\n"
+
             f"Qty: {quantity}\n"
-            f"Entry: ${price}"
+            f"Entry: ${price}\n"
         )
-    
+
+        if trend_score is not None:
+            response += f"Trend Score: {trend_score}\n"
+
+        if entry_score is not None:
+            response += f"Entry Score: {entry_score}\n"
+
+        if entry_rsi is not None:
+            response += f"RSI: {entry_rsi}\n"
+
+        if relative_volume is not None:
+            response += f"Rel Volume: {relative_volume}\n"
+
+        if sector is not None:
+            response += f"Sector: {sector}\n"
+
         await ctx.send(response)
+
     except Exception as e:
-        await ctx.send(f"Entry error: {e}")
+        await ctx.send(f"❌ Entry error: {e}")
 
 @bot.command()
 async def exit(ctx, position_id: int, exit_price: float):

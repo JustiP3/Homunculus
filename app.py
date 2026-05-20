@@ -26,28 +26,44 @@ def create_position():
     symbol = request.form["symbol"]
     option_type = request.form["option_type"]
 
-    entry_price = request.form["entry_price"]
-    strike_price = request.form["strike_price"]
+    entry_price = float(request.form["entry_price"])
+    strike_price = float(request.form["strike_price"])
 
     expiration_date = request.form["expiration_date"]
 
-    quantity = request.form["quantity"]
+    quantity = int(request.form["quantity"])
+    current_price = float(request.form["current_price"])
 
-    current_price = request.form["current_price"]
+    stop_loss = request.form.get("stop_loss")
+    take_profit = request.form.get("take_profit")
 
-    stop_loss = request.form.get("stop_loss") or None
-    take_profit = request.form.get("take_profit") or None
+    stop_loss = float(stop_loss) if stop_loss else None
+    take_profit = float(take_profit) if take_profit else None
+
+    # Optional analytics (future-proofing)
+    trend_score = request.form.get("trend_score")
+    entry_score = request.form.get("entry_score")
+    entry_rsi = request.form.get("entry_rsi")
+    relative_volume = request.form.get("relative_volume")
+    sector = request.form.get("sector")
 
     db.create_position(
-        symbol,
-        option_type,
-        entry_price,
-        strike_price,
-        expiration_date,
-        quantity,
-        current_price,
-        stop_loss,
-        take_profit
+        symbol=symbol,
+        option_type=option_type,
+        strike_price=strike_price,
+        expiration_date=expiration_date,
+        quantity=quantity,
+        entry_price=entry_price,
+        current_price=current_price,
+
+        stop_loss=stop_loss,
+        take_profit=take_profit,
+
+        trend_score=float(trend_score) if trend_score else None,
+        entry_score=float(entry_score) if entry_score else None,
+        entry_rsi=float(entry_rsi) if entry_rsi else None,
+        relative_volume=float(relative_volume) if relative_volume else None,
+        sector=sector
     )
 
     return redirect("/positions")

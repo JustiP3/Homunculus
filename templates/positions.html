@@ -233,7 +233,6 @@
                 <table>
 
                     <thead>
-
                         <tr>
                             <th>Opened</th>
                             <th>Symbol</th>
@@ -241,12 +240,20 @@
                             <th>Strike</th>
                             <th>Expiration</th>
                             <th>Qty</th>
+
                             <th>Entry</th>
                             <th>Current</th>
+
+                            <!-- NEW FIELDS -->
+                            <th>Trend</th>
+                            <th>Entry Score</th>
+                            <th>RSI</th>
+                            <th>Rel Vol</th>
+                            <th>Sector</th>
+
                             <th>PnL</th>
                             <th>Status</th>
                         </tr>
-
                     </thead>
 
                     <tbody>
@@ -299,6 +306,25 @@
 
                             <td>
                                 ${{ p.current_price }}
+                            </td>
+                            <td>
+                                {{ p.trend_score or "—" }}
+                            </td>
+
+                            <td>
+                                {{ p.entry_score or "—" }}
+                            </td>
+
+                            <td>
+                                {{ p.entry_rsi or "—" }}
+                            </td>
+
+                            <td>
+                                {{ p.relative_volume or "—" }}
+                            </td>
+
+                            <td>
+                                {{ p.sector or "—" }}
                             </td>
                             <td>
 

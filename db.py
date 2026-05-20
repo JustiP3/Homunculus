@@ -204,7 +204,7 @@ def delete_signal(signal_id):
 
 
 
-#Positions
+# Positions
 def create_position(
     symbol,
     option_type,
@@ -213,35 +213,144 @@ def create_position(
     expiration_date,
     quantity,
     current_price,
+
+    # Optional core fields
+    option_symbol=None,
+    signal_id=None,
+
     stop_loss=None,
     take_profit=None,
+
+    # Trend / entry analytics
+    trend_score=None,
+    entry_score=None,
+
+    entry_rsi=None,
+    entry_atr=None,
+
+    relative_volume=None,
+    distance_from_ema20=None,
+
+    # Market context
+    sector=None,
+    market_regime=None,
+    vix_at_entry=None,
+
+    # Options metadata
+    dte_at_entry=None,
+
+    # Position state
     status="OPEN"
 ):
-    
+
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         INSERT INTO positions (
-            symbol, option_type, entry_price, strike, expiration,
-            quantity, current_price, stop_loss, take_profit, status
+
+            signal_id,
+
+            symbol,
+            option_symbol,
+
+            option_type,
+            strike,
+            expiration,
+
+            quantity,
+
+            entry_price,
+            current_price,
+
+            stop_loss,
+            take_profit,
+
+            trend_score,
+            entry_score,
+
+            entry_rsi,
+            entry_atr,
+
+            relative_volume,
+            distance_from_ema20,
+
+            sector,
+            market_regime,
+            vix_at_entry,
+
+            dte_at_entry,
+
+            status
+
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (
+
+            ?,
+
+            ?, ?,
+
+            ?, ?, ?,
+
+            ?,
+
+            ?, ?,
+
+            ?, ?,
+
+            ?, ?,
+
+            ?, ?,
+
+            ?, ?,
+
+            ?, ?, ?,
+
+            ?,
+
+            ?
+        )
     """, (
+
+        signal_id,
+
         symbol,
+        option_symbol,
+
         option_type,
-        entry_price,
         strike_price,
         expiration_date,
+
         quantity,
+
+        entry_price,
         current_price,
+
         stop_loss,
         take_profit,
+
+        trend_score,
+        entry_score,
+
+        entry_rsi,
+        entry_atr,
+
+        relative_volume,
+        distance_from_ema20,
+
+        sector,
+        market_regime,
+        vix_at_entry,
+
+        dte_at_entry,
+
         status
     ))
 
     conn.commit()
+
     position_id = cursor.lastrowid
+
     conn.close()
 
     return position_id

@@ -8,3 +8,4 @@ test.py
 watchlist.py
 db_test.py
 data_snapshot.txt
+update_positions_table.py
