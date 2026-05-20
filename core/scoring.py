@@ -1,8 +1,9 @@
+def score_stock(df, sector_df=None, vix_df=None):
 
-def score_stock(df):
     latest = df.iloc[-1]
+
     if len(df) < 7:
-        return 0, latest
+        return None
 
     score = 0
 
@@ -10,7 +11,6 @@ def score_stock(df):
     # PRICE FILTER
     # -------------------------
 
-    # Ideal stock price range for affordable options
     if 15 <= latest["Close"] <= 150:
         score += 2
 
@@ -31,12 +31,9 @@ def score_stock(df):
     # RSI MOMENTUM
     # -------------------------
 
-    # Sweet spot:
-    # strong momentum but not overextended
     if 55 <= latest["RSI"] <= 65:
         score += 3
 
-    # Slightly extended but still acceptable
     elif 65 < latest["RSI"] <= 70:
         score += 1
 
@@ -51,18 +48,14 @@ def score_stock(df):
     # DISTANCE FROM EMA20
     # -------------------------
 
-    # Avoid chasing extended moves
     distance_from_ema20 = (
         (latest["Close"] - latest["EMA20"])
         / latest["EMA20"]
     )
 
-    # Ideal:
-    # within 8% above EMA20
     if 0 <= distance_from_ema20 <= 0.08:
         score += 3
 
-    # Slightly extended
     elif 0.08 < distance_from_ema20 <= 0.15:
         score += 1
 
@@ -70,13 +63,79 @@ def score_stock(df):
     # EMA20 SLOPE
     # -------------------------
 
-    # Confirm EMA20 is actually rising
-    
-    
     ema20_now = latest["EMA20"]
     ema20_prev = df.iloc[-5]["EMA20"]
 
     if ema20_now > ema20_prev:
         score += 2
 
-    return score, latest
+    # -------------------------
+    # SECTOR CONFIRMATION
+    # -------------------------
+
+    sector_trending_up = False
+    relative_strength = 0
+
+    if sector_df is not None and not sector_df.empty:
+
+        sector_latest = sector_df.iloc[-1]
+
+        sector_trending_up = (
+            sector_latest["Close"] >
+            sector_latest["EMA50"]
+        )
+
+        if sector_trending_up:
+            score += 2
+
+        stock_strength = (
+            latest["Close"] /
+            latest["EMA20"]
+        )
+
+        sector_strength = (
+            sector_latest["Close"] /
+            sector_latest["EMA20"]
+        )
+
+        relative_strength = (
+            stock_strength -
+            sector_strength
+        )
+
+        if relative_strength > 0:
+            score += 2
+
+    # -------------------------
+    # VIX FILTER
+    # -------------------------
+
+    vix_value = None
+
+    if vix_df is not None and not vix_df.empty:
+
+        vix_latest = vix_df.iloc[-1]
+
+        vix_value = round(
+            vix_latest["Close"],
+            2
+        )
+
+        if vix_latest["Close"] > 30:
+            score -= 3
+
+    return {
+
+        "score": score,
+
+        "latest": latest,
+
+        "relative_strength": round(
+            relative_strength,
+            3
+        ),
+
+        "sector_trending": sector_trending_up,
+
+        "vix": vix_value
+    }

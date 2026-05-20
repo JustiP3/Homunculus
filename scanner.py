@@ -39,26 +39,14 @@ def scan():
 
     results = []
 
-    # One large batch request
-    data = get_data_batch(build_symbol_universe())
+    data = get_data_batch(
+        build_symbol_universe()
+    )
 
-    # Market context
     vix_df = data.get("VIXY")
-    spy_df = data.get("SPY")
-    qqq_df = data.get("QQQ")
 
     if vix_df is not None and not vix_df.empty:
         vix_df = compute_indicators(vix_df)
-
-    if spy_df is not None and not spy_df.empty:
-        spy_df = compute_indicators(spy_df)
-
-    if qqq_df is not None and not qqq_df.empty:
-        qqq_df = compute_indicators(qqq_df)
-
-    # ----------------------------
-    # Scan individual tickers
-    # ----------------------------
 
     for ticker, meta in TICKERS.items():
 
@@ -69,33 +57,21 @@ def scan():
             df = data.get(ticker)
             sector_df = data.get(sector_symbol)
 
-            # ----------------------------
-            # Validate stock data
-            # ----------------------------
+            # -------------------------
+            # Validate data
+            # -------------------------
 
-            if df is None or df.empty:
+            if (
+                df is None or
+                df.empty or
+                sector_df is None or
+                sector_df.empty
+            ):
                 continue
 
-            
-
-            if df.empty:
-                continue
-
-            # ----------------------------
-            # Validate sector ETF data
-            # ----------------------------
-
-            if sector_df is None or sector_df.empty:
-                continue
-
-            
-
-            if sector_df.empty:
-                continue
-
-            # ----------------------------
+            # -------------------------
             # Compute indicators
-            # ----------------------------
+            # -------------------------
 
             df = compute_indicators(df)
             sector_df = compute_indicators(sector_df)
@@ -106,112 +82,64 @@ def scan():
             if df.empty or sector_df.empty:
                 continue
 
-            latest = df.iloc[-1]
-            sector_latest = sector_df.iloc[-1]
+            # -------------------------
+            # Score stock
+            # -------------------------
 
-            # ----------------------------
-            # Base stock score
-            # ----------------------------
-
-            score, latest = score_stock(df)
-
-            # ----------------------------
-            # Sector confirmation
-            # ----------------------------
-
-            sector_trending_up = (
-                sector_latest["Close"] >
-                sector_latest["EMA50"]
+            result = score_stock(
+                df=df,
+                sector_df=sector_df,
+                vix_df=vix_df
             )
 
-            if sector_trending_up:
-                score += 2
+            if result is None:
+                continue
 
-            # ----------------------------
-            # Relative strength
-            # ----------------------------
+            score = result["score"]
 
-            stock_strength = (
-                latest["Close"] /
-                latest["EMA20"]
-            )
+            if score < 5:
+                continue
 
-            sector_strength = (
-                sector_latest["Close"] /
-                sector_latest["EMA20"]
-            )
+            latest = result["latest"]
 
-            relative_strength = (
-                stock_strength -
-                sector_strength
-            )
+            results.append({
 
-            if relative_strength > 0:
-                score += 2
+                "ticker": ticker,
 
-            # ----------------------------
-            # Volatility filter
-            # ----------------------------
+                "sector": sector_symbol,
 
-            vix_value = None
+                "industry": meta["industry"],
 
-            if vix_df is not None and not vix_df.empty:
+                "score": score,
 
-                vix_latest = vix_df.iloc[-1]
-
-                vix_value = round(
-                    vix_latest["Close"],
+                "price": round(
+                    latest["Close"],
                     2
-                )
+                ),
 
-                # Penalize extreme volatility
-                if vix_latest["Close"] > 30:
-                    score -= 3
+                "rsi": round(
+                    latest["RSI"],
+                    2
+                ),
 
-            # ----------------------------
-            # Final candidate filter
-            # ----------------------------
+                "volume": int(
+                    latest["Volume"]
+                ),
 
-            if score >= 5:
+                "atr": round(
+                    latest["ATR"],
+                    2
+                ),
 
-                results.append({
+                "relative_strength":
+                    result["relative_strength"],
 
-                    "ticker": ticker,
+                "sector_trending":
+                    result["sector_trending"],
 
-                    "sector": sector_symbol,
-
-                    "industry": meta["industry"],
-
-                    "score": score,
-
-                    "price": round(
-                        latest["Close"],
-                        2
-                    ),
-
-                    "rsi": round(
-                        latest["RSI"],
-                        2
-                    ),
-
-                    "volume": int(
-                        latest["Volume"]
-                    ),
-
-                    "atr": round(
-                        latest["ATR"],
-                        2
-                    ),
-
-                    "relative_strength": round(
-                        relative_strength,
-                        3
-                    ),
-
-                    "sector_trending": sector_trending_up,
-
-                    "vix": vix_value
-                })
+                "vix":
+                    result["vix"]
+            })
 
         except Exception as e:
 
