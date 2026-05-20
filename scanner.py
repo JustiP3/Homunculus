@@ -1,6 +1,6 @@
 from core.data import get_data_batch
 from core.indicators import compute_indicators
-from core.scoring import score_stock
+from core.scoring import score_entry_quality, score_trend_quality
 from core.logging_util import log_results
 
 from alerts import send_alert
@@ -86,11 +86,13 @@ def scan():
             # Score stock
             # -------------------------
 
-            result = score_stock(
+            result = score_trend_quality(
                 df=df,
                 sector_df=sector_df,
                 vix_df=vix_df
             )
+
+            entry_score = score_entry_quality(df)["entry_score"]
 
             if result is None:
                 continue
@@ -111,6 +113,8 @@ def scan():
                 "industry": meta["industry"],
 
                 "score": score,
+
+                "entry_score": entry_score,
 
                 "price": round(
                     latest["Close"],
@@ -165,12 +169,13 @@ def run_scanner():
             if (c['score'] > 12):
                 ticker = c['ticker']
                 score = c['score']
+                entry_score = c['entry_score']
                 price = c['price']
                 rsi = c['rsi']
                 atr = c['atr']
                 volume = c['volume']
 
-                line = f"{ticker} | Score: {score} | Price: {price} | RSI: {rsi} | ATR: {atr} | Volume: {volume}"
+                line = f"{ticker} | Trend Score: {score} | Entry Score: {entry_score} | Price: {price} | RSI: {rsi} | ATR: {atr} | Volume: {volume}"
                 print(line)
                 db.create_market_snapshot(symbol=ticker, price=price, rsi=rsi, atr=atr, volume=volume)
                 message += line + "\n"
