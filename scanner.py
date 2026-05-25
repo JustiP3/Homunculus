@@ -182,7 +182,8 @@ def run_scanner():
                 db.create_market_snapshot(symbol=ticker, price=price, rsi=rsi, atr=atr, volume=volume, scan_id=scan_id)
                 if entry_score >= 9:
                     #stragegy_id = 19 for "Long Call", ticker, signal_type = "CALL _BUY", rsi
-                    db.create_signal(19, ticker, "CALL_BUY", rsi)
+                    #def create_signal(strategy_id, symbol, signal_type, underlying_price, rsi, volume, ema_9, ema_20, scan_id, trend_score=None, entry_score=None):
+                    db.create_signal(19, ticker, "CALL_BUY", price, rsi, volume, scan_id, trend_score=score, entry_score=entry_score)
                 message += line + "\n"
 
         send_alert(message)

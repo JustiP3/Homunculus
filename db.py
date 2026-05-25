@@ -114,21 +114,26 @@ def delete_strategy(strategy_id):
 
 
 #Signals 
-def create_signal(strategy_id, symbol, signal_type, rsi):
+def create_signal(strategy_id, symbol, signal_type, underlying_price, rsi, volume, scan_id, trend_score=None, entry_score=None):
 
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         INSERT INTO signals (
-            strategy_id, symbol, signal_type, rsi
+            strategy_id, symbol, signal_type, underlying_price, rsi, volume, scan_id, trend_score, entry_score
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         strategy_id,
         symbol,
         signal_type,
+        underlying_price,
         rsi,
+        volume,
+        scan_id,
+        trend_score,
+        entry_score
     ))
 
     conn.commit()
