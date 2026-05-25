@@ -560,17 +560,34 @@ def delete_position_event(event_id):
 
 
 
-#Market Snapshots
-def create_market_snapshot(symbol, price, rsi, vix=None, atr=None, volume=None, market_regime=None):
+
+# Market Snapshots
+def create_market_snapshot(
+    symbol,
+    price,
+    rsi,
+    scan_id,
+    vix=None,
+    atr=None,
+    volume=None,
+    market_regime=None
+):
 
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         INSERT INTO market_snapshots (
-            symbol, underlying_price, rsi, vix, atr, volume, market_regime
+            symbol,
+            underlying_price,
+            rsi,
+            vix,
+            atr,
+            volume,
+            market_regime,
+            scan_id
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         symbol,
         price,
@@ -578,7 +595,8 @@ def create_market_snapshot(symbol, price, rsi, vix=None, atr=None, volume=None, 
         vix,
         atr,
         volume,
-        market_regime
+        market_regime,
+        scan_id
     ))
 
     conn.commit()
@@ -586,6 +604,7 @@ def create_market_snapshot(symbol, price, rsi, vix=None, atr=None, volume=None, 
     conn.close()
 
     return snapshot_id
+
 
 def get_market_snapshots(
     symbol,

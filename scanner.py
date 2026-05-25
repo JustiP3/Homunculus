@@ -6,6 +6,7 @@ from core.logging_util import log_results
 from alerts import send_alert
 from watchlist import get_tickers
 
+from datetime import datetime
 import db
 
 # -------------------------
@@ -159,6 +160,7 @@ def scan():
 def run_scanner():
     candidates = scan()
     log_results(candidates)
+    scan_id = datetime.now(datetime.timezone.utc).isoformat()
 
     if not candidates:
         print("No high-probability setups today.")                
@@ -177,7 +179,7 @@ def run_scanner():
 
                 line = f"{ticker} | Trend Score: {score} | Entry Score: {entry_score} | Price: {price} | RSI: {rsi} | ATR: {atr} | Volume: {volume}"
                 print(line)
-                db.create_market_snapshot(symbol=ticker, price=price, rsi=rsi, atr=atr, volume=volume)
+                db.create_market_snapshot(symbol=ticker, price=price, rsi=rsi, atr=atr, volume=volume, scan_id=scan_id)
                 if entry_score >= 9:
                     #stragegy_id = 19 for "Long Call", ticker, signal_type = "CALL _BUY", rsi
                     db.create_signal(19, ticker, "CALL_BUY", rsi)
