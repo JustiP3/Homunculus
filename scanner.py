@@ -6,7 +6,7 @@ from core.logging_util import log_results
 from alerts import send_alert
 from watchlist import get_tickers
 
-from datetime import datetime
+from datetime import datetime, timezone
 import db
 
 # -------------------------
@@ -160,7 +160,7 @@ def scan():
 def run_scanner():
     candidates = scan()
     log_results(candidates)
-    scan_id = datetime.now(datetime.timezone.utc).isoformat()
+    scan_id = datetime.now(timezone.utc).isoformat()
 
     if not candidates:
         print("No high-probability setups today.")                
