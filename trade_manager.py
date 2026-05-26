@@ -75,26 +75,55 @@ def enter_trade(
         dte_at_entry=dte_at_entry
     )
 
+    event_value = entry_price * quantity
+    event_id = db.create_position_event(
+        position_id=position_id,
+        event_type="ENTRY",
+        event_value=event_value,
+        quantity=quantity,
+        price=entry_price,
+        message=f"Entered trade at {entry_price}"
+    )
+
     return position_id
 
 def exit_trade(position_id, exit_price):
     db.update_position_price(position_id, exit_price)
     db.update_position_status(position_id, "CLOSED")
 
+    quantity = db.get_position(position_id)["quantity"]
+    event_value = exit_price * quantity
+    event_id = db.create_position_event(
+        position_id=position_id,
+        event_type="EXIT",
+        event_value=event_value,
+        quantity=quantity,
+        price=exit_price,
+        message=f"Exited trade at {exit_price}"
+    )
+
 def update_position(position_id, current_price, quantity=None):
     #quantity is quanitiy sold
-    stating_quantity = db.get_position(position_id)["quantity"]
-    
+    starting_quantity = db.get_position(position_id)["quantity"]
+    event_value = current_price * starting_quantity
+
     if quantity is not None:
-        new_quantity = max(stating_quantity - quantity, 0)
+        new_quantity = max(starting_quantity - quantity, 0)
+        quantity_sold = starting_quantity - new_quantity
         if new_quantity == 0:
             status = "CLOSED"
+            db.create_position_event(position_id=position_id, event_type="EXIT", event_value=event_value, quantity=quantity_sold, price=current_price, message=f"Exited trade at {current_price}")
         else:
             status = "PARTIAL"
+            event_value = quantity_sold * current_price
+            db.create_position_event(position_id=position_id, event_type="PARTIAL EXIT", event_value=event_value, quantity=quantity_sold, price=current_price, message=f"Partial exited trade at {current_price}")
         
         db.update_position_quantity(position_id, new_quantity, status)
-
-    db.update_position_price(position_id, current_price)
+        db.update_position_price(position_id, current_price)
+        
+    else:
+        # If quantity is None, we assume it's just a price update without a trade event
+        db.update_position_price(position_id, current_price)
 
 def get_all_positions():
     return db.get_open_positions()

@@ -491,21 +491,31 @@ def delete_position(position_id):
 
 
 #Position Events
-def create_position_event(position_id, event_type, event_value, message):
-
+def create_position_event(position_id, event_type, event_value, quantity, price, message):
+    
+    pnl = 0.0
+    # Calculate PnL if it's an EXIT or PARTIAL EXIT event
+    if event_type in ["EXIT", "PARTIAL EXIT"]:
+        position = get_position(position_id)
+        entry_price = position["entry_price"]
+        pnl = ((price - entry_price) * quantity)
+    
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         INSERT INTO position_events (
-            position_id, event_type, event_value, notes
+            position_id, event_type, event_value, notes, quantity, price, pnl
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         position_id,
         event_type,
         event_value,
-        message
+        message,
+        quantity,
+        price,
+        pnl 
     ))
 
     conn.commit()
