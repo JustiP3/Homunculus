@@ -1,12 +1,15 @@
 # CRUD functions for historical data
 
 
-
 import sqlite3
 from typing import Optional
 
 
-DB_PATH = "../homunculus.db"
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+DB_PATH = os.path.join(BASE_DIR, "homunculus.db")
 
 
 # =====================================================
@@ -202,6 +205,25 @@ def insert_historical_snapshot(
     conn.close()
 
 
+def get_historical_snapshots(run_id):
+    """
+    Return all historical snapshots associated with a run.
+    """
+
+    conn = get_connection()
+
+    rows = conn.execute("""
+        SELECT *
+        FROM historical_snapshot
+        WHERE run_id = ?
+        ORDER BY snapshot_time
+    """, (run_id,)).fetchall()
+
+    conn.close()
+
+    return [dict(r) for r in rows]
+
+
 # =====================================================
 # HISTORICAL_SCORES
 # =====================================================
@@ -333,6 +355,29 @@ def insert_historical_outcome(
 
     conn.commit()
     conn.close()
+
+
+
+def get_historical_outcomes(run_id):
+    """
+    Return all historical outcomes associated with a run.
+    """
+
+    conn = get_connection()
+
+    rows = conn.execute("""
+        SELECT *
+        FROM historical_outcomes
+        WHERE run_id = ?
+        ORDER BY snapshot_time
+    """, (run_id,)).fetchall()
+
+    conn.close()
+
+    return [dict(r) for r in rows]
+
+
+
 
 
 # =====================================================

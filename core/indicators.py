@@ -13,3 +13,17 @@ def compute_indicators(df):
         window=14
     )
     return df
+
+def compute_features(df):
+
+    df["RELATIVE_VOLUME"] = (
+        df["Volume"] / df["Volume"].rolling(20).mean()
+    )
+
+    df["DIST_EMA20"] = df["Close"] - df["EMA20"]
+    df["DIST_EMA50"] = df["Close"] - df["EMA50"]
+    df["DIST_EMA200"] = df["Close"] - df["EMA200"]
+
+    df["ATR_PCT"] = df["ATR"] / df["Close"]
+
+    return df

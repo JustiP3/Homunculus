@@ -4,10 +4,11 @@ from h_db import (
     insert_historical_bar,
     get_historical_bars,
     insert_historical_snapshot,
+    get_historical_snapshots,
     insert_historical_score,
     get_scores_for_run,
     insert_historical_outcome,
-    execute_query
+    get_historical_outcomes
 )
 
 
@@ -93,11 +94,7 @@ def test_historical_db():
         scan_id="TEST_SCAN"
     )
 
-    snapshots = execute_query("""
-        SELECT *
-        FROM historical_snapshot
-        WHERE run_id = ?
-    """, [run_id])
+    snapshots = get_historical_snapshots(run_id)
 
     assert len(snapshots) > 0
 
@@ -149,11 +146,7 @@ def test_historical_db():
         max_loss_20d=-2.0
     )
 
-    outcomes = execute_query("""
-        SELECT *
-        FROM historical_outcomes
-        WHERE run_id = ?
-    """, [run_id])
+    outcomes = get_historical_outcomes(run_id)
 
     assert len(outcomes) > 0
 
