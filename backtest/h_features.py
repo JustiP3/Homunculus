@@ -37,7 +37,7 @@ def build_features(run_id: int, symbol: str = TICKER):
 
     df = pd.DataFrame(bars)
 
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    df["timestamp"] = pd.to_datetime(df["timestamp"], format="ISO8601", utc=True)
     df = df.sort_values("timestamp").reset_index(drop=True)
 
     # Standardize column names for indicator library
@@ -97,7 +97,7 @@ def build_features(run_id: int, symbol: str = TICKER):
 
             vix=None,  # optional future enhancement
 
-            market_regime=row["MARKET_REGIME"],
+            #market_regime=row["MARKET_REGIME"],
             sector=None,
 
             scan_id="H_FEATURES_V1"
